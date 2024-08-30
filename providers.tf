@@ -7,7 +7,7 @@ terraform {
       name = "my_single_workspace_using_terraform" 
     } 
   } 
-
+  
 required_providers {
     aws = {
       source  = "hashicorp/aws"

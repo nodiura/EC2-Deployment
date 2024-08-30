@@ -8,8 +8,8 @@ variable "prefix" {
 }
 resource "aws_vpc" "main" {
   cidr_block = "172.16.0.0/16"
-  tags       = {
-    Name = join("-", ["${var.prefix}", "vpc"])
+  tags = {
+    Name = join("-", [var.prefix, "vpc"])
   }
 }
 resource "aws_internet_gateway" "main" {
@@ -18,14 +18,12 @@ resource "aws_internet_gateway" "main" {
 resource "aws_subnet" "main" {
   vpc_id     = aws_vpc.main.id
   cidr_block = "172.16.0.0/24"
-  
   tags = {
-    Name = join("-", ["${var.prefix}", "subnet"])
+    Name = join("-", [var.prefix, "subnet"])
   }
 }
 resource "aws_route_table" "main" {
   vpc_id = aws_vpc.main.id
-  
   route {
     cidr_block = "0.0.0.0/0"
     gateway_id = aws_internet_gateway.main.id
@@ -38,7 +36,6 @@ resource "aws_route_table_association" "main" {
 module "security_gr" {
   source  = "app.terraform.io/027-spring-cld/security_gr/aws"
   version = "1.0.0"
-  # insert required variables here
   vpc_id          = aws_vpc.main.id
   security_groups = {
     "web" = {
