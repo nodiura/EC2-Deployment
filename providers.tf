@@ -1,14 +1,15 @@
-terraform { 
-  cloud { 
-    
-    organization = "027-spring-cld" 
 
-    workspaces { 
-      name = "my_single_workspace_using_terraform" 
-    } 
-  } 
-  
-required_providers {
+terraform {
+  cloud {
+
+    organization = "027-spring-cld"
+
+    workspaces {
+      name = "modules_workspace"
+    }
+  }
+
+  required_providers {
     aws = {
       source  = "hashicorp/aws"
       version = "~> 5.0"
