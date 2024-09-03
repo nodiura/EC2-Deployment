@@ -68,10 +68,9 @@ module "security_gr" {
 }
 resource "aws_instance" "server" {
   ami                    = "ami-066784287e358dad1"
-  instance_type          = "t2.micro"
-  key_name               = aws_key_pair.deployer.key_name
-  subnet_id              = aws_subnet.main.id
+  instance_type         = "t2.micro"
   vpc_security_group_ids = [module.security_gr.web_security_group_ids]
+  # Other configurations...
   user_data              = <<-EOF
                  #!/bin/bash
                  sudo yum update -y
