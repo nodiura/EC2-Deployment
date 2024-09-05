@@ -1,10 +1,6 @@
 resource "aws_key_pair" "deployer" {
   key_name   = "deployer-key"
-  public_key = file(var.public_key_path)
-}
-variable "public_key_path" {
-  description = "Path to public key"
-  default     = "~/.ssh/id_ed25519.pub"
+  public_key = file("~/.ssh/id_ed25519.pub")
 }
 variable "prefix" {
   type    = string
