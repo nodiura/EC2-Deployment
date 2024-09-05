@@ -35,12 +35,12 @@ resource "aws_route_table_association" "main" {
 }
 module "security_gr" {
   source  = "app.terraform.io/027-spring-cld/security_gr/aws"
-  version = "1.0.0"
+  version = "1.0.1"
   vpc_id  = aws_vpc.main.id
   security_groups = {
     "web" = {
       description = "Security Group for Web Tier"
-      ingress_rules = [
+      "ingress_rules" = [
         {
           to_port     = 22
           from_port   = 22
@@ -62,25 +62,44 @@ module "security_gr" {
           protocol    = "tcp"
           description = "https ingress rule"
         }
+      ],
+      "egress_rules" = [
+        {
+          to_port     = 0
+          from_port   = 0
+          cidr_blocks = ["0.0.0.0/0"]
+          protocol    = "-1"  # This allows all outbound traffic
+          description = "allow all outbound traffic"
+        }
       ]
     }
   }
 }
+
 resource "aws_instance" "server" {
   ami                    = "ami-066784287e358dad1"
   instance_type         = "t2.micro"
-  vpc_security_group_ids = [module.security_gr.web_security_group_ids]
-  # Other configurations...
+  key_name               = aws_key_pair.deployer.key_name
+  subnet_id             = aws_subnet.main.id
+  vpc_security_group_ids = [module.security_gr.my-security_gr_id["web"]]
+  
   user_data              = <<-EOF
-                 #!/bin/bash
-                 sudo yum update -y
-                 sudo yum install -y httpd
-                 sudo systemctl start httpd.service
-                 sudo systemctl enable httpd.service
-                 echo "<h1> Hello World from BamBam </h1>" | sudo tee /var/www/html/index.html
-                 EOF
+                     #!/bin/bash
+                     sudo yum update -y
+                     sudo yum install -y httpd
+                     sudo systemctl start httpd.service
+                     sudo systemctl enable httpd.service
+                     echo "<h1> Hello World from Nodira </h1>" | sudo tee /var/www/html/index.html
+  EOF
   tags = {
     Name = join("-", [var.prefix, "ec2"])
   }
 }
-   
+resource "aws_eip" "instance_ip" {
+  instance = aws_instance.server.id 
+  domain = "vpc" 
+  
+}
+output "instance_public_ip" {
+  value = aws_eip.instance_ip.public_ip  # Output the public IP of the Elastic IP
+}
