@@ -1,18 +1,21 @@
-resource "aws_key_pair" "deployer" {
-  key_name   = "deployer-key"
-  public_key = file("~/.ssh/id_ed25519.pub")
-}
+   variable "public_key_content" {}
+   
+   resource "aws_key_pair" "deployer" {
+     key_name   = "your-key-name"
+     public_key = var.public_key_content  
+   }
+   
 
 variable "prefix" {
   type    = string
   default = "project-aug-28"
 }
-# Create a map of instance configurations for the loop.
+
 variable "instance_count" {
   type    = number
   default = 3
 }
-# Create a list for instance names
+
 locals {
   instance_names = [for i in range(var.instance_count) : "${var.prefix}-ec2-${i + 1}"]
 }
