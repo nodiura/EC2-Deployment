@@ -21,8 +21,6 @@ jobs:
         uses: hashicorp/setup-terraform@v2
         with:
           cli_config_credentials_token: ${{ secrets.TF_LOGIN_TOKEN }}
-      - name: Ensure SSH Key
-        run: 
       - name: Run Terraform Init
         run: terraform init
       - name: Run Terraform Plan
