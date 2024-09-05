@@ -22,17 +22,7 @@ jobs:
         with:
           cli_config_credentials_token: ${{ secrets.TF_LOGIN_TOKEN }}
       - name: Ensure SSH Key
-        run: |
-          #echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
-          # Set the appropriate permissions for the private key file
-          chmod 600 ~/.ssh/id_ed25519
-          # Optionally add the public key (if provided) to the authorized_keys
-          if [ -n "$SSH_PUBLIC_KEY" ]; then
-            echo "$SSH_PUBLIC_KEY" >> ~/.ssh/authorized_keys
-            chmod 600 ~/.ssh/authorized_keys
-          fi
-          # Optionally, configure SSH for strict host checking
-          echo "StrictHostKeyChecking no" >> ~/.ssh/config
+        run: 
       - name: Run Terraform Init
         run: terraform init
       - name: Run Terraform Plan
