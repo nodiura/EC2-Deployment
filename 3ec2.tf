@@ -1,6 +1,6 @@
-variable "public_key_path" {
-  description = "Path to the public key file"
-  default     = "~/.ssh/id_ed25519.pub" # Or use an absolute path
+resource "aws_key_pair" "deployer" {
+  key_name   = "deployer-key"
+  public_key = file("/home/nodiraurazbaeva/.ssh/id_ed25519.pub")  # Update this line
 }
 resource "aws_key_pair" "deployer" {
   key_name   = "deployer-key"
