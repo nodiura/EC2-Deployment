@@ -6,6 +6,15 @@ variable "prefix" {
   type    = string
   default = "project-aug-28"
 }
+# Create a map of instance configurations for the loop.
+variable "instance_count" {
+  type    = number
+  default = 3
+}
+# Create a list for instance names
+locals {
+  instance_names = [for i in range(var.instance_count) : "${var.prefix}-ec2-${i + 1}"]
+}
 resource "aws_vpc" "main" {
   cidr_block = "172.16.0.0/16"
   tags = {
@@ -40,7 +49,7 @@ module "security_gr" {
   security_groups = {
     "web" = {
       description = "Security Group for Web Tier"
-      "ingress_rules" = [
+      ingress_rules = [
         {
           to_port     = 22
           from_port   = 22
@@ -63,7 +72,7 @@ module "security_gr" {
           description = "https ingress rule"
         }
       ],
-      "egress_rules" = [
+      egress_rules = [
         {
           to_port     = 0
           from_port   = 0
@@ -75,14 +84,14 @@ module "security_gr" {
     }
   }
 }
-
 resource "aws_instance" "server" {
+  for_each               = toset(local.instance_names)
   ami                    = "ami-066784287e358dad1"
-  instance_type          = "t2.micro"
-  key_name               = aws_key_pair.deployer.key_name
-  subnet_id              = aws_subnet.main.id
+  instance_type         = "t2.micro"
+  key_name              = aws_key_pair.deployer.key_name
+  subnet_id             = aws_subnet.main.id
   vpc_security_group_ids = [module.security_gr.my-security_gr_id["web"]]
-
+  
   user_data = <<-EOF
                      #!/bin/bash
                      sudo yum update -y
@@ -92,14 +101,15 @@ resource "aws_instance" "server" {
                      echo "<h1> Hello World from Nodira </h1>" | sudo tee /var/www/html/index.html
   EOF
   tags = {
-    Name = join("-", [var.prefix, "ec2"])
+    Name = each.key  # Use the instance name
   }
 }
+# Elastic IP resource for each instance
 resource "aws_eip" "instance_ip" {
-  instance = aws_instance.server.id
+  for_each = aws_instance.server
+  instance = each.value.id
   domain   = "vpc"
-
 }
-output "instance_public_ip" {
-  value = aws_eip.instance_ip.public_ip # Output the public IP of the Elastic IP
+output "instance_public_ips" {
+  value = { for k, v in aws_eip.instance_ip : k => v.public_ip }
 }
