@@ -1,7 +1,12 @@
+variable "public_key_path" {
+  description = "Path to the public key file"
+  default     = "~/.ssh/id_ed25519.pub" # Or use an absolute path
+}
 resource "aws_key_pair" "deployer" {
   key_name   = "deployer-key"
-  public_key = file("~/.ssh/id_ed25519.pub")
+  public_key = file(var.public_key_path)
 }
+
 variable "prefix" {
   type    = string
   default = "project-aug-28"
@@ -87,11 +92,11 @@ module "security_gr" {
 resource "aws_instance" "server" {
   for_each               = toset(local.instance_names)
   ami                    = "ami-066784287e358dad1"
-  instance_type         = "t2.micro"
-  key_name              = aws_key_pair.deployer.key_name
-  subnet_id             = aws_subnet.main.id
+  instance_type          = "t2.micro"
+  key_name               = aws_key_pair.deployer.key_name
+  subnet_id              = aws_subnet.main.id
   vpc_security_group_ids = [module.security_gr.my-security_gr_id["web"]]
-  
+
   user_data = <<-EOF
                      #!/bin/bash
                      sudo yum update -y
@@ -101,7 +106,7 @@ resource "aws_instance" "server" {
                      echo "<h1> Hello World from Nodira </h1>" | sudo tee /var/www/html/index.html
   EOF
   tags = {
-    Name = each.key  # Use the instance name
+    Name = each.key # Use the instance name
   }
 }
 # Elastic IP resource for each instance
