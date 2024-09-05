@@ -68,7 +68,7 @@ module "security_gr" {
           to_port     = 0
           from_port   = 0
           cidr_blocks = ["0.0.0.0/0"]
-          protocol    = "-1"  # This allows all outbound traffic
+          protocol    = "-1" # This allows all outbound traffic
           description = "allow all outbound traffic"
         }
       ]
@@ -78,12 +78,12 @@ module "security_gr" {
 
 resource "aws_instance" "server" {
   ami                    = "ami-066784287e358dad1"
-  instance_type         = "t2.micro"
+  instance_type          = "t2.micro"
   key_name               = aws_key_pair.deployer.key_name
-  subnet_id             = aws_subnet.main.id
+  subnet_id              = aws_subnet.main.id
   vpc_security_group_ids = [module.security_gr.my-security_gr_id["web"]]
-  
-  user_data              = <<-EOF
+
+  user_data = <<-EOF
                      #!/bin/bash
                      sudo yum update -y
                      sudo yum install -y httpd
@@ -96,10 +96,10 @@ resource "aws_instance" "server" {
   }
 }
 resource "aws_eip" "instance_ip" {
-  instance = aws_instance.server.id 
-  domain = "vpc" 
-  
+  instance = aws_instance.server.id
+  domain   = "vpc"
+
 }
 output "instance_public_ip" {
-  value = aws_eip.instance_ip.public_ip  # Output the public IP of the Elastic IP
+  value = aws_eip.instance_ip.public_ip # Output the public IP of the Elastic IP
 }
