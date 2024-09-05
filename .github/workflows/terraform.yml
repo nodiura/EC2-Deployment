@@ -1,33 +1,42 @@
-name: Terraform Workflow
+name: EC2-Deployment
 on:
   push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+    branches: ["main"]
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "Run Terraform Apply or Destroy?"
+        type: string
+        required: false
+env:
+  AWS_ACCESS_KEY_ID: ${{ secrets.SECRET_PRIME }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
+  AWS_REGION: us-east-1
 jobs:
   terraform:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-      - name: Set up Terraform
-        uses: hashicorp/setup-terraform@v1
+      - uses: actions/checkout@v4
+      - name: My First Terraform Setup
+        uses: hashicorp/setup-terraform@v2
         with:
-          terraform_version: "5.0"  
+          cli_config_credentials_token: ${{ secrets.TF_LOGIN_TOKEN }}
       - name: Ensure SSH Key
         run: |
-          mkdir -p ~/.ssh
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+          # Set the appropriate permissions for the private key file
           chmod 600 ~/.ssh/id_ed25519
-      - name: Terraform Init
+          # Optionally add the public key (if provided) to the authorized_keys
+          if [ -n "$SSH_PUBLIC_KEY" ]; then
+            echo "$SSH_PUBLIC_KEY" >> ~/.ssh/authorized_keys
+            chmod 600 ~/.ssh/authorized_keys
+          fi
+          # Optionally, configure SSH for strict host checking
+          echo "StrictHostKeyChecking no" >> ~/.ssh/config
+      - name: Run Terraform Init
         run: terraform init
-      - name: Terraform Plan
+      - name: Run Terraform Plan
         run: terraform plan
-      - name: Terraform Apply
-        run: terraform apply -auto-approve
-      # Optional: Destroy resources when a pull request is closed or merged
-      - name: Terraform Destroy
-        if: github.event.action == 'closed'  # Only run destroy if PR is closed
-        run: terraform destroy -auto-approve
+      - name: Run Terraform Deployment
+        run: terraform ${{ github.event.inputs.action }} -auto-approve
+        if: ${{ github.event.inputs.action == 'apply' || github.event.inputs.action == 'destroy' }}
