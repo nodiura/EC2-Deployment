@@ -114,3 +114,12 @@ resource "aws_eip" "instance_ip" {
 output "instance_public_ips" {
   value = { for k, v in aws_eip.instance_ip : k => v.public_ip }
 }
+
+variable "public_key_content" {
+  description = "The content of the public key"
+  type        = string
+}
+resource "aws_key_pair" "deployer" {
+  key_name   = "your-key-name"
+  public_key = var.public_key_content
+}
