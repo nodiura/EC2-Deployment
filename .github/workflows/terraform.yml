@@ -1,30 +1,38 @@
 name: EC2-Deployment
+ 
 on:
   push:
-    branches: ["main"]
+    branches: [ "main" ]
   workflow_dispatch:
     inputs:
       action:
-        description: "Run Terraform Apply or Destroy?"
+        description: Run Terraform Apply or Destroy ?
         type: string
         required: false
 env:
   AWS_ACCESS_KEY_ID: ${{ secrets.SECRET_PRIME }}
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
   AWS_REGION: us-east-1
+ 
 jobs:
   terraform:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      
       - name: My First Terraform Setup
         uses: hashicorp/setup-terraform@v2
         with:
           cli_config_credentials_token: ${{ secrets.TF_LOGIN_TOKEN }}
+      
       - name: Run Terraform Init
         run: terraform init
+ 
       - name: Run Terraform Plan
         run: terraform plan
+ 
       - name: Run Terraform Deployment
         run: terraform ${{ github.event.inputs.action }} -auto-approve
         if: ${{ github.event.inputs.action == 'apply' || github.event.inputs.action == 'destroy' }}
+ 
+ 

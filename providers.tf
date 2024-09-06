@@ -1,13 +1,13 @@
 
-terraform {
-  cloud {
+terraform { 
+  cloud { 
+    
+    organization = "027-spring-cld" 
 
-    organization = "027-spring-cld"
-
-    workspaces {
-      name = "modules_workspace"
-    }
-  }
+    workspaces { 
+      name = "tfe_organization" 
+    } 
+  } 
 
   required_providers {
     aws = {
