@@ -1,38 +1,34 @@
 name: EC2-Deployment
- 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   workflow_dispatch:
     inputs:
       action:
-        description: Run Terraform Apply or Destroy ?
+        description: "Run Terraform Apply or Destroy?"
         type: string
         required: false
 env:
   AWS_ACCESS_KEY_ID: ${{ secrets.SECRET_PRIME }}
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
   AWS_REGION: us-east-1
- 
+  PUBLIC_KEY_CONTENT: ${{ secrets.PUBLIC_KEY_CONTENT }}
 jobs:
   terraform:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
       - name: My First Terraform Setup
         uses: hashicorp/setup-terraform@v2
         with:
           cli_config_credentials_token: ${{ secrets.TF_LOGIN_TOKEN }}
-      
+      - name: Set up environment variables
+        run: |
+          echo "PUBLIC_KEY_CONTENT=$PUBLIC_KEY_CONTENT" >> $GITHUB_ENV
       - name: Run Terraform Init
         run: terraform init
- 
       - name: Run Terraform Plan
-        run: terraform plan
- 
+        run: terraform plan -var "public_key_content=$PUBLIC_KEY_CONTENT"
       - name: Run Terraform Deployment
-        run: terraform ${{ github.event.inputs.action }} -auto-approve
+        run: terraform ${{ github.event.inputs.action }} -auto-approve -var "public_key_content=$PUBLIC_KEY_CONTENT"
         if: ${{ github.event.inputs.action == 'apply' || github.event.inputs.action == 'destroy' }}
- 
- 
