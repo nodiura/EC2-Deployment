@@ -1,4 +1,3 @@
-
 variable "prefix" {
   type    = string
   default = "project-aug-28"
@@ -110,12 +109,57 @@ resource "aws_eip" "instance_ip" {
 output "instance_public_ips" {
   value = { for k, v in aws_eip.instance_ip : k => v.public_ip }
 }
-
 variable "public_key_content" {
   description = "The content of the public key"
   type        = string
 }
 resource "aws_key_pair" "deployer" {
-  key_name   = "your-key-name"
+  key_name   = "my-key-name"
   public_key = var.public_key_content
+}
+# Load Balancer
+resource "aws_lb" "main" {
+  name               = "${var.prefix}-lb"
+  internal           = false
+  load_balancer_type = "application"
+  security_groups    = [module.security_gr.my-security_gr_id["web"]]
+  subnets            = [aws_subnet.main.id]
+  enable_deletion_protection = false
+  tags = {
+    Name = join("-", [var.prefix, "load-balancer"])
+  }
+}
+# Target group
+resource "aws_lb_target_group" "main" {
+  name     = "${var.prefix}-tg"
+  port     = 80
+  protocol = "HTTP"
+  vpc_id   = aws_vpc.main.id
+  health_check {
+    path                = "/"
+    interval            = 30
+    timeout             = 5
+    healthy_threshold  = 2
+    unhealthy_threshold = 2
+  }
+  tags = {
+    Name = join("-", [var.prefix, "target-group"])
+  }
+}
+# Register the instances with the target group
+resource "aws_lb_target_group_attachment" "main" {
+  for_each           = aws_instance.server
+  target_group_arn   = aws_lb_target_group.main.arn
+  target_id          = each.value.id
+  port               = 80
+}
+# ALB Listener
+resource "aws_lb_listener" "http" {
+  load_balancer_arn = aws_lb.main.arn
+  port              = 80
+  protocol          = "HTTP"
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.main.arn
+  }
 }
