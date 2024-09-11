@@ -7,9 +7,13 @@ variable "instance_count" {
   type    = number
   default = 3
 }
-# Create a list for instance names
+# list for instance names
 locals {
-  instance_names = [for i in range(var.instance_count) : "${var.prefix}-ec2-${i + 1}"]
+    instance_server = [
+        "jack",
+        "lili",
+        "anna"
+    ]
 }
 resource "aws_vpc" "main" {
   cidr_block = "172.16.0.0/16"
@@ -81,7 +85,7 @@ module "security_gr" {
   }
 }
 resource "aws_instance" "server" {
-  for_each               = toset(local.instance_names)
+  for_each               = toset(local.instance_server)
   ami                    = "ami-066784287e358dad1"
   instance_type         = "t2.micro"
   key_name              = aws_key_pair.deployer.key_name
@@ -94,7 +98,7 @@ resource "aws_instance" "server" {
                      sudo yum install -y httpd
                      sudo systemctl start httpd.service
                      sudo systemctl enable httpd.service
-                     echo "<h1> Hello World from Nodira </h1>" | sudo tee /var/www/html/index.html
+                     echo "<h1> Hello World from ${each.key} </h1>" | sudo tee /var/www/html/index.html
   EOF
   tags = {
     Name = each.key  # Use the instance name
