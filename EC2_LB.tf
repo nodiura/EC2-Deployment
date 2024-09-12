@@ -84,6 +84,10 @@ module "security_gr" {
     }
   }
 }
+resource "aws_key_pair" "deployer" {
+  key_name   = "deployer-key"
+  public_key = file("~/.ssh/id_ed25519.pub")
+}
 resource "aws_instance" "server" {
   for_each               = toset(local.instance_server)
   ami                    = "ami-066784287e358dad1"
@@ -113,14 +117,7 @@ resource "aws_eip" "instance_ip" {
 output "instance_public_ips" {
   value = { for k, v in aws_eip.instance_ip : k => v.public_ip }
 }
-variable "public_key_content" {
-  description = "The content of the public key"
-  type        = string
-}
-resource "aws_key_pair" "deployer" {
-  key_name   = "my-key-name"
-  public_key = var.public_key_content
-}
+
 # Load Balancer
 resource "aws_lb" "main" {
   name               = "${var.prefix}-lb"
