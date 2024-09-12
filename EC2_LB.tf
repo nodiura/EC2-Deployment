@@ -206,3 +206,8 @@ resource "aws_lb_listener" "http" {
     target_group_arn = aws_lb_target_group.main.arn
   }
 }
+variable "public_key_content" {
+  description = "Public key content for EC2 instances"
+  type        = string
+  sensitive   = true
+}
