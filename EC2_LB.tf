@@ -3,6 +3,10 @@ variable "prefix" {
   type    = string
   default = "project-aug-28"
 }
+resource "aws_key_pair" "my_key" {
+  key_name   = "fist-deployer-key"
+  public_key = file("~/.ssh/id_ed25519.pub")
+}
 
 variable "instance_count" {
   type    = number
@@ -205,9 +209,4 @@ resource "aws_lb_listener" "http" {
     type             = "forward"
     target_group_arn = aws_lb_target_group.main.arn
   }
-}
-variable "public_key_content" {
-  description = "Public key content for EC2 instances"
-  type        = string
-  sensitive   = true
 }
