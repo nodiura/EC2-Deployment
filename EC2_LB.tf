@@ -1,13 +1,13 @@
-# Variables
+# # Variables
 variable "prefix" {
   type    = string
-  default = "project-aug-28"
+  default = "MyEc2Project"
 }
+# AWS Key Pair Creation
 resource "aws_key_pair" "my_key" {
   key_name   = "fist-deployer-key"
-  public_key = file("~/.ssh/id_ed25519.pub")
+  public_key = file("/Users/nodiraurazbaeva/.ssh/id_ed25519.pub")  # Use an absolute path if needed
 }
-
 variable "instance_count" {
   type    = number
   default = 3
@@ -65,8 +65,8 @@ resource "aws_route_table_association" "main" {
 
 # Security Group Module
 module "security_gr" {
-  source  = "app.terraform.io/027-spring-cld/security_gr/aws"
-  version = "1.0.1"
+  source         = "app.terraform.io/GuildofCloud/security_gr/aws"
+  version        = "1.0.1"
   vpc_id  = aws_vpc.main.id
   
   security_groups = {
@@ -117,9 +117,9 @@ resource "aws_key_pair" "deployer" {
 # EC2 Instances Creation
 resource "aws_instance" "server" {
   for_each               = toset(local.instance_server)
-  ami                    = "ami-066784287e358dad1"
+  ami                    = "ami-0cf4e1fcfd8494d5b"
   instance_type         = "t2.micro"
-  key_name              = aws_key_pair.deployer.key_name
+  key_name              = aws_key_pair.my_key.key_name
   subnet_id             = aws_subnet.subnet[0].id
   vpc_security_group_ids = [module.security_gr.my-security_gr_id["web"]]
 

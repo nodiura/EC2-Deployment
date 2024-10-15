@@ -1,14 +1,10 @@
-
-terraform { 
-  cloud { 
-    
-    organization = "027-spring-cld" 
-
-    workspaces { 
-      name = "tfe_organization" 
-    } 
-  } 
-
+# terraform {
+#   cloud {
+#     organization = "GuildofCloud"
+#     workspaces {
+#       name = "MyAWS"
+#     }
+terraform {  
   required_providers {
     aws = {
       source  = "hashicorp/aws"
@@ -16,3 +12,6 @@ terraform {
     }
   }
 }
+   provider "aws" {
+     region     = "us-west-1"  
+   }
