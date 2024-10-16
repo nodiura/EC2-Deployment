@@ -1,33 +1,39 @@
-name: EC2-Deployment
+name: GoGreen-Deployment
 on:
   push:
     branches: ["main"]
   workflow_dispatch:
     inputs:
       action:
-        description: "Run Terraform Apply or Destroy?"
+        description: "Choose an action: Execute Terraform Plan, Apply or Destroy?"
         type: string
-        required: false
-
+        required: true
+        default: "apply"  # Default action for convenience
 env:
   AWS_ACCESS_KEY_ID: ${{ secrets.SECRET_PRIME }}
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
   AWS_REGION: us-east-1
-
 jobs:
-    terraform:
-      runs-on: ubuntu-latest
-      steps:
-        - uses: actions/checkout@v4
+  terraform:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25  # Set job timeout to 25 minutes
+    steps:
+      - uses: actions/checkout@v4
         
-        - name: My First Terraform Setup
-          uses: hashicorp/setup-terraform@v2
-          with:
-            cli_config_credentials_token: ${{ secrets.TF_LOGIN_TOKENT }}
+      - name: My Terraform Setup
+        uses: hashicorp/setup-terraform@v2
+        with:
+          cli_config_credentials_token: ${{ secrets.TF_LOGIN_TOKENT }}
         
-        - name: Run Terraform Init
-          run: terraform init 
-        - name: Run Terraform Deployment
-          run: terraform ${{ github.event.inputs.action }} -auto-approve -var "public_key_content=${{ secrets.TF_LOGIN_TOKENT }}"
-          if: ${{ github.event.inputs.action == 'apply' || github.event.inputs.action == 'destroy' }}
-  
+      - name: Run Terraform Init
+        run: terraform init
+      - name: Run Terraform Plan
+        id: plan
+        run: terraform plan -out=tfplan -var "public_key_content=${{ secrets.TF_LOGIN_TOKENT }}"
+      
+      - name: Run Terraform Apply
+        if: ${{ github.event.inputs.action == 'apply' }}
+        run: terraform apply tfplan -auto-approve
+      - name: Run Terraform Destroy
+        if: ${{ github.event.inputs.action == 'destroy' }}
+        run: terraform destroy -auto-approve
