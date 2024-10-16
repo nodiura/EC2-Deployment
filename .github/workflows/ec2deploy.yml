@@ -1,14 +1,14 @@
-name: GoGreen-Deployment
+name: GoGreen-Deploy
 on:
   push:
     branches: ["main"]
   workflow_dispatch:
     inputs:
       action:
-        description: "Choose an action: Execute Terraform Plan, Apply or Destroy?"
+        description: "Choose an action: Apply or Destroy?"
         type: string
         required: true
-        default: "apply"  # Default action for convenience
+        default: "apply"  
 env:
   AWS_ACCESS_KEY_ID: ${{ secrets.SECRET_PRIME }}
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
@@ -19,21 +19,16 @@ jobs:
     timeout-minutes: 25  # Set job timeout to 25 minutes
     steps:
       - uses: actions/checkout@v4
-        
-      - name: My Terraform Setup
+      - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
         with:
           cli_config_credentials_token: ${{ secrets.TF_LOGIN_TOKENT }}
-        
-      - name: Run Terraform Init
+      - name: Initialize Terraform
         run: terraform init
-      - name: Run Terraform Plan
-        id: plan
-        run: terraform plan -out=tfplan -var "public_key_content=${{ secrets.TF_LOGIN_TOKENT }}"
-      
-      - name: Run Terraform Apply
-        if: ${{ github.event.inputs.action == 'apply' }}
-        run: terraform apply tfplan -auto-approve
-      - name: Run Terraform Destroy
-        if: ${{ github.event.inputs.action == 'destroy' }}
-        run: terraform destroy -auto-approve
+      - name: Execute Terraform Action
+        run: |
+          if [ "${{ github.event.inputs.action }}" == "destroy" ]; then
+            terraform destroy -auto-approve
+          else
+            terraform apply -auto-approve -var "public_key_content=${{ secrets.TF_LOGIN_TOKENT }}"
+          fi
