@@ -167,10 +167,10 @@ resource "aws_secretsmanager_secret" "db_credentials" {
 # Random Password for RDS Credentials
 resource "random_password" "db_password" {
   length           = 16                     
-  special          = false                   # No special characters
-  upper            = true                    # Include uppercase letters
-  lower            = true                    # Include lowercase letters              
-  override_special = ""                      # Ensuring no invalid special characters
+  special          = false                   
+  upper            = true                   
+  lower            = true                                 
+  override_special = ""                      
 }
 resource "random_string" "secret_suffix" {
   length  = 8
@@ -189,8 +189,8 @@ EOT
 resource "aws_db_instance" "default" {
   identifier         = "${lower(var.prefix)}-db"
   engine             = "mysql"  
-  engine_version     = "8.0.32"   # Ensure this is a valid version from your region
-  instance_class     = "db.t3.micro"  # Ensure this is a supported instance class
+  engine_version     = "8.0.32"   
+  instance_class     = "db.t3.micro" 
   allocated_storage   = 20  
   storage_type       = "gp2"
   username           = "dbadmin"  
