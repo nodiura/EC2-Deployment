@@ -1,10 +1,10 @@
-# terraform {
-#   cloud {
-#     organization = "GuildofCloud"
-#     workspaces {
-#       name = "MyAWS"
-#     }
-terraform {  
+ terraform {
+  # cloud {
+  #   organization = "GuildofCloud"
+  #   workspaces {
+  #     name = "MyAWS"
+  #   }
+  # }
   required_providers {
     aws = {
       source  = "hashicorp/aws"
@@ -12,6 +12,6 @@ terraform {
     }
   }
 }
-   provider "aws" {
-     region     = "us-west-1"  
-   }
+provider "aws" {
+  region = "us-west-1"
+}
